@@ -15,6 +15,8 @@
 import json
 import os
 import re
+import threading
+import time
 import urllib.error
 import urllib.request
 
@@ -42,10 +44,12 @@ def load_token():
 
 
 class McdMcp:
-    def __init__(self, token=None, timeout=60):
+    def __init__(self, token=None, timeout=60, retries=2):
         self.token = token or load_token()
         self.timeout = timeout
+        self.retries = retries
         self._id = 0
+        self._lock = threading.Lock()
         self.trace = []          # 调用审计日志，用于生成 MCP_INTEGRATION 证据
         self._initialized = False
 
@@ -71,28 +75,42 @@ class McdMcp:
         return _strip_sse(raw)
 
     def rpc(self, method, params=None):
-        self._id += 1
-        raw = self._post({"jsonrpc": "2.0", "id": self._id, "method": method,
-                          "params": params or {}})
-        if isinstance(raw, dict):
-            return raw
-        try:
-            return json.loads(raw)
-        except Exception:
-            obj = _first_json(raw)
-            if obj is None:
-                raise McpError("无法解析 RPC 响应：%s" % raw[:200])
-            return obj
+        with self._lock:
+            self._id += 1
+            rid = self._id
+        payload = {"jsonrpc": "2.0", "id": rid, "method": method, "params": params or {}}
+        last = None
+        for attempt in range(self.retries + 1):
+            try:
+                raw = self._post(payload)
+            except McpError as e:
+                # 网络类错误才重试；业务错误（HTTP 4xx）直接抛出
+                last = e
+                if "HTTP 4" in str(e):
+                    raise
+                time.sleep(0.8 * (attempt + 1))
+                continue
+            if isinstance(raw, dict):
+                return raw
+            try:
+                return json.loads(raw)
+            except Exception:
+                obj = _first_json(raw)
+                if obj is None:
+                    raise McpError("无法解析 RPC 响应：%s" % raw[:200])
+                return obj
+        raise last
 
     def initialize(self):
         if self._initialized:
             return
-        self.rpc("initialize", {
-            "protocolVersion": "2024-11-05",
-            "capabilities": {},
-            "clientInfo": {"name": "mcd-lunch-negotiator", "version": "0.1"},
-        })
-        self._initialized = True
+        with self._lock:
+            if self._initialized:
+                return
+            self._post({"jsonrpc": "2.0", "id": 0, "method": "initialize",
+                        "params": {"protocolVersion": "2024-11-05", "capabilities": {},
+                                   "clientInfo": {"name": "mcd-lunch-negotiator", "version": "0.2"}}})
+            self._initialized = True
 
     # ---------- 业务层 ----------
     def list_tools(self):
@@ -117,7 +135,8 @@ class McdMcp:
         result = resp.get("result", {})
         content = result.get("content") or []
         text = "\n".join(c.get("text", "") for c in content if isinstance(c, dict) and c.get("text"))
-        self.trace.append({"tool": name, "args": args or {}, "chars": len(text)})
+        with self._lock:
+            self.trace.append({"tool": name, "args": args or {}, "chars": len(text)})
         if result.get("isError"):
             raise McpError("%s 返回错误：%s" % (name, text[:300]))
         return text
