@@ -452,6 +452,7 @@ def render(engine, opt_plan):
     # 优惠券叠加
     coupons = engine.load_coupons()
     applied, coupon_rows, gross = [], [], o_total
+    paid = {}          # 每人实际到手价（挂券后）
     if coupons:
         for row in opt_plan:
             it = row["item"]
@@ -467,6 +468,7 @@ def render(engine, opt_plan):
             if best:
                 applied.append(best["name"])
                 gross -= (it["price"] - best["price"])
+                paid[row["person"]["name"]] = best["price"]
                 coupon_rows.append((row["person"]["name"], it["name"], it["price"],
                                     best["name"], best["price"], best.get("tag", "")))
         L.append("## 优惠券叠加")
@@ -529,12 +531,25 @@ def render(engine, opt_plan):
     for idx, code in enumerate(order_idx, 1):
         names = groups[code]
         item = next(x["item"] for x in opt_plan if x["item"] and x["item"]["code"] == code)
-        sub = round(item["price"] * len(names), 2)
+        sub = 0.0
+        marks = []
+        for nm in names:
+            p = paid.get(nm, item["price"])
+            sub += p
+            if nm in paid:
+                marks.append("%s挂券 ¥%.2f" % (nm, p))
+        sub = round(sub, 2)
         grand += sub
-        L.append("- **第 %d 单**：%s × %d —— %s（单价 ¥%.2f，小计 ¥%.2f）" % (
-            idx, item["name"], len(names), "、".join(names), item["price"], sub))
+        if marks and len(names) == 1:
+            tail = "，已挂券"
+        elif marks:
+            tail = "；" + "、".join(marks)
+        else:
+            tail = ""
+        L.append("- **第 %d 单**：%s × %d —— %s（单价 ¥%.2f%s，小计 ¥%.2f）" % (
+            idx, item["name"], len(names), "、".join(names), item["price"], tail, sub))
     L.append("")
-    L.append("**共 %d 单，合计 ¥%.2f。**" % (len(order_idx), round(grand, 2)))
+    L.append("**共 %d 单，实付合计 ¥%.2f。**" % (len(order_idx), round(grand, 2)))
     L.append("")
     L.append("> 全部价格来自麦当劳官方 `calculate-price` 实时接口；本次新增 MCP 调用 %d 次。"
              "支付由人扫码完成，不做自动下单。" % engine.call_count)
