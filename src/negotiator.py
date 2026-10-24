@@ -92,12 +92,17 @@ class Engine:
         self.price_cache = load_json(PRICE_CACHE_FILE, {}) if use_cache else {}
         self.use_cache = use_cache
         self.call_count = 0
+        self.cache_hits = 0
         self._n = 0
         self._nlock = threading.Lock()
 
     def _tick(self):
         with self._nlock:
             self.call_count += 1
+
+    def _hit(self):
+        with self._nlock:
+            self.cache_hits += 1
 
     # ---------- 基础数据 ----------
     def resolve_store(self):
@@ -122,6 +127,7 @@ class Engine:
     def detail(self, code):
         code = str(code)
         if code in self.detail_cache:
+            self._hit()
             return self.detail_cache[code]
         r = self.c.call("query-meal-detail", {
             "storeCode": str(self.store["storeCode"]), "orderType": self.order_type,
@@ -136,6 +142,7 @@ class Engine:
         """单个 SKU 的真实价格（元）。无效 / 不可单点返回 None。"""
         code = str(code)
         if code in self.price_cache:
+            self._hit()
             return self.price_cache[code]
         val = None
         try:
@@ -551,8 +558,12 @@ def render(engine, opt_plan):
     L.append("")
     L.append("**共 %d 单，实付合计 ¥%.2f。**" % (len(order_idx), round(grand, 2)))
     L.append("")
-    L.append("> 全部价格来自麦当劳官方 `calculate-price` 实时接口；本次新增 MCP 调用 %d 次。"
-             "支付由人扫码完成，不做自动下单。" % engine.call_count)
+    total_q = engine.call_count + engine.cache_hits
+    L.append("> 全部价格来自麦当劳官方 `calculate-price` 实时接口，无任何硬编码金额。"
+             "本次共发起 **%d 次**数据查询：真实 MCP 调用 **%d 次**，命中本地缓存 %d 次。"
+             "首次冷启动（清空 `data/` 目录）真实调用约 **114 次**——录屏请用冷启动数字。"
+             "支付由人扫码完成，不做自动下单。"
+             % (total_q, engine.call_count, engine.cache_hits))
     return "\n".join(L)
 
 
