@@ -57,7 +57,7 @@ Authorization: Bearer <TOKEN>
         ↓
 ④ calculate-price       → 官方实时计价（返回「分」）
         ↓
-⑤ create-order          → 生成订单（未在演示中真下单）
+⑤ create-order          → 生成订单 + 支付链接（已实测，含取消清理）
 ```
 
 ### ① `query-nearby-stores` — 解析门店
@@ -68,7 +68,7 @@ Authorization: Bearer <TOKEN>
 
 | 参数 | 说明 |
 |---|---|
-| `beType` | `1` = 外送，`2` = 到店（本项目用外送口径做定价基准） |
+| `beType` | `1` = **到店取餐**（本项目使用）、`2` = 麦乐送到家、`5` = 得来速(DT)、`6` = 企业团餐 |
 | `searchType` | `2` = 关键词搜索 |
 | `city` + `keyword` | **两个必须同时传**，见坑 1 |
 
@@ -151,14 +151,56 @@ data.rounds[]
 
 **关键约束：一单只能用一张券**。所以券的分配按「一单一人」处理，不能叠加。
 
-### ⑥ `create-order` — 生成订单（当前版本未启用）
+### ⑥ `create-order` — 生成订单 + 支付链接（已实测）
 
-已探明接口存在，但演示中**不执行真下单**。原因：
+**入参**（到店自取）：
 
-- 下单是写操作，会产生真实订单和真实扣款
-- 比赛演示不需要，且自动支付是安全红线
+```json
+{
+  "storeCode": "1420762",
+  "orderType": 1,
+  "beType": 1,
+  "takeWayCode": "eat-in",
+  "items": [{"productCode": "521953", "quantity": 1}],
+  "needTableware": false
+}
+```
 
-产品的边界是：**算出方案 + 生成支付链接，支付由人扫**。这条边界会明确写在所有对外材料里。
+`takeWayCode` 不是自己编的，**必须从 `calculate-price` 返回的 `takeWayList[].code` 里取**。同一门店当天可能返回 `eat-in`（堂食）、`locker-out`（店外取餐柜），取决于门店支持范围。
+
+**真实返回**（订单号与 payId 已脱敏）：
+
+```json
+{
+  "orderId": "1030...683",
+  "payId": "1110...360",
+  "payH5Url": "https://m.mcd.cn/mcp/scanToPay?orderId=1030...683",
+  "orderDetail": {
+    "orderStatus": "待支付",
+    "totalAmount": "27",
+    "couponList": [],
+    "takeWay": "堂食",
+    "expirePayTime": "2026-10-24 13:42:16"
+  }
+}
+```
+
+**三个实测出来的关键事实**：
+
+| 事实 | 对产品设计的影响 |
+|---|---|
+| `payH5Url` 真实存在 | 「生成支付链接」不是空话，方案可以直接交给用户去扫 |
+| **订单 15 分钟过期**（创建 13:27 → 过期 13:42） | 拆单不能拆太多，且必须把链接分给对应的人扫，不能一个人连扫 5 单 |
+| 返回含 `couponList` 字段 | 下单是能挂券的，券优化可以直接作用到订单层，不必只在建议层 |
+
+**安全边界（写进代码，不是写进承诺）**：
+
+- 本仓库的 `src/test_order.py` 是**一次性探针**，不是产品功能；它创建订单后会**立即调用 `cancel-order` 清理**
+- 产品主流程 `negotiator.py` **不下单、不支付**，只输出方案与建议
+- 探针实测记录：下单成功 → `query-order` 确认状态「待支付」→ `cancel-order` 返回 `{"cancelResult": true}`
+- 支付永远由人扫码完成，代码里没有任何支付调用
+
+> 这条边界是刻意选择的：写操作失控是这类工具最大的风险，而「算清楚 + 给出链接」已经把活干完了，剩下的那一步不该由 AI 代劳。
 
 ---
 
