@@ -1,0 +1,22 @@
+# 凭据（严禁提交）
+.token.json
+credentials/
+*.token
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 运行时产物
+plan.md
+data/
+*.log
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store
