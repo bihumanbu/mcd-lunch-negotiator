@@ -93,6 +93,7 @@ class Engine:
         self.use_cache = use_cache
         self.call_count = 0
         self.cache_hits = 0
+        self.coupon_error = None      # 券查询失败原因（区分「没券」与「查不到”）
         self._n = 0
         self._nlock = threading.Lock()
 
@@ -283,11 +284,13 @@ class Engine:
 
     # ---------- 优惠券 ----------
     def load_coupons(self):
-        """解析账户券。返回 [{name, price, tag}]，解析失败返回空列表。"""
+        """解析账户券。查询失败时记录原因，不静默降级为『没有券』。"""
+        self.coupon_error = None
         try:
             t = self.c.call_raw("query-my-coupons", {})
             self._tick()
-        except Exception:
+        except Exception as e:
+            self.coupon_error = str(e).replace("\n", " ")[:120]
             return []
         out = []
         for m in re.finditer(r"##\s*(.+?)\s*\n-\s*\*\*优惠\*\*:\s*¥([\d.]+)", t):
@@ -490,8 +493,16 @@ def render(engine, opt_plan):
             L.append("> 一单只能用一张券，因此券按「一单一人」分配。挂券后合计 **¥%.2f**，"
                      "较无券方案再省 ¥%.2f。" % (round(gross, 2), round(o_total - gross, 2)))
         else:
-            L.append("账户有 %d 张可用券，但本次推荐无匹配商品；券信息：%s"
-                     % (len(coupons), "、".join("「%s」¥%.2f" % (c["name"], c["price"]) for c in coupons)))
+            if engine.coupon_error:
+                L.append("> ⚠️ **券查询失败**（网络原因，已重试）：`%s`" % engine.coupon_error)
+                L.append(">")
+                L.append("> 因此本次方案**未计入任何券**，上面的合计是纯商品价格。"
+                         "券的真实状态未知，不代表账户没有券——请重跑一次确认。")
+            elif coupons:
+                L.append("账户有 %d 张可用券，但本次推荐无匹配商品；券信息：%s"
+                         % (len(coupons), "、".join("「%s」¥%.2f" % (c["name"], c["price"]) for c in coupons)))
+            else:
+                L.append("> 今日账户无可用券（查询成功，确实为空）。")
         L.append("")
 
     # 套餐 vs 单点逐项明细
@@ -522,41 +533,44 @@ def render(engine, opt_plan):
         L.extend(notes)
         L.append("")
 
-    # 拆单
+    # 拆单：一单只能用一张券 → 有券的人必须独占一单，无券的人按同款合并
     L.append("## 怎么下这几单")
     L.append("")
-    groups, order_idx = {}, []
-    for row in opt_plan:
-        it = row["item"]
-        if not it:
-            continue
-        if it["code"] not in groups:
-            groups[it["code"]] = []
-            order_idx.append(it["code"])
-        groups[it["code"]].append(row["person"]["name"])
-    grand = 0.0
-    for idx, code in enumerate(order_idx, 1):
-        names = groups[code]
-        item = next(x["item"] for x in opt_plan if x["item"] and x["item"]["code"] == code)
-        sub = 0.0
-        marks = []
-        for nm in names:
-            p = paid.get(nm, item["price"])
-            sub += p
-            if nm in paid:
-                marks.append("%s挂券 ¥%.2f" % (nm, p))
-        sub = round(sub, 2)
-        grand += sub
-        if marks and len(names) == 1:
-            tail = "，已挂券"
-        elif marks:
-            tail = "；" + "、".join(marks)
-        else:
-            tail = ""
-        L.append("- **第 %d 单**：%s × %d —— %s（单价 ¥%.2f%s，小计 ¥%.2f）" % (
-            idx, item["name"], len(names), "、".join(names), item["price"], tail, sub))
+    L.append("> 拆单规则：**一单只能用一张券**，所以有券的人单独占一单（否则合并等于白扔券），"
+             "没券的人按同款合并。")
     L.append("")
-    L.append("**共 %d 单，实付合计 ¥%.2f。**" % (len(order_idx), round(grand, 2)))
+
+    single_rows, groups, group_idx = [], {}, []
+    for row in opt_plan:
+        if not row["item"]:
+            continue
+        nm = row["person"]["name"]
+        if nm in paid:
+            single_rows.append(row)
+        else:
+            code = row["item"]["code"]
+            if code not in groups:
+                groups[code] = []
+                group_idx.append(code)
+            groups[code].append(row)
+
+    orders = [(r["item"], [r], True) for r in single_rows]
+    orders += [(groups[c][0]["item"], groups[c], False) for c in group_idx]
+
+    grand = 0.0
+    for idx, (item, rows, has_coupon) in enumerate(orders, 1):
+        names = [r["person"]["name"] for r in rows]
+        sub = round(sum(paid.get(r["person"]["name"], item["price"]) for r in rows), 2)
+        grand += sub
+        tail = "，已挂券" if has_coupon else ""
+        L.append("- **第 %d 单**：%s × %d —— %s（单价 ¥%.2f%s，小计 ¥%.2f）" % (
+            idx, item["name"], len(rows), "、".join(names), item["price"], tail, sub))
+    L.append("")
+    L.append("**共 %d 单，实付合计 ¥%.2f。**" % (len(orders), round(grand, 2)))
+    L.append("")
+    L.append("> 每单生成独立支付链接，**15 分钟内有效**——所以链接要分给对应的人各自扫，"
+             "一个人连扫 %d 单来不及。这也是这个工具的真实定位："
+             "**一个人算，每人自己扫**。" % len(orders))
     L.append("")
     total_q = engine.call_count + engine.cache_hits
     L.append("> 全部价格来自麦当劳官方 `calculate-price` 实时接口，无任何硬编码金额。"
