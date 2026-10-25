@@ -1,0 +1,139 @@
+{
+  "account": {
+    "availablePoint": "0",
+    "accountId": "<ACCOUNT_ID_REDACTED>",
+    "accumulativePoint": "0",
+    "currency": "麦享会积分",
+    "currentMouthExpirePoint": "0",
+    "expiredPoint": "0",
+    "frozenPoint": "0",
+    "lastMouthExpirePoint": "0",
+    "nextMouthExpirePoint": "0",
+    "usedPoint": "0"
+  },
+  "price": {
+    "productOriginalPrice": 2700,
+    "productPrice": 2700,
+    "originalPrice": 2700,
+    "discount": 0,
+    "price": 2700,
+    "productList": [
+      {
+        "productCode": "521953",
+        "productName": "龙焰芝士棒鸡腿堡",
+        "quantity": 1,
+        "originalSubtotal": 2700,
+        "subtotal": 2700
+      }
+    ],
+    "takeWayList": [
+      {
+        "code": "eat-in",
+        "title": "堂食",
+        "subtitle": "店内用餐"
+      },
+      {
+        "code": "locker-out",
+        "title": "外带",
+        "subtitle": "店外取餐柜"
+      }
+    ]
+  },
+  "create_order": {
+    "success": true,
+    "code": 200,
+    "message": "请求成功",
+    "datetime": "2026-10-24 13:27:16",
+    "traceId": "dce7b1acb86fe97794c214d346b8fa62",
+    "data": {
+      "orderId": "<ORDER_ID_REDACTED>",
+      "payId": "<PAY_ID_REDACTED>",
+      "payH5Url": "https://m.mcd.cn/mcp/scanToPay?orderId=<ORDER_ID_REDACTED>",
+      "orderDetail": {
+        "orderId": "<ORDER_ID_REDACTED>",
+        "orderStatus": "待支付",
+        "status": "10",
+        "storeName": "麦当劳深圳同方信息港餐厅",
+        "storeAddress": "科技园北区朗山路11号同方信息港E栋G层5号商铺",
+        "orderProductList": [
+          {
+            "productName": "龙焰芝士棒鸡腿堡",
+            "productImage": "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_521953_320.png",
+            "quantity": 1,
+            "price": "27",
+            "comboItemList": []
+          }
+        ],
+        "totalAmount": "27",
+        "realTotalAmount": "27",
+        "totalDiscountAmount": "0",
+        "couponList": [],
+        "createTime": "2026-10-24 13:27:16",
+        "deliveryPrice": "0",
+        "realDeliveryPrice": "0",
+        "needTableware": false,
+        "productPrice": "27",
+        "takeWay": "堂食",
+        "pickupCode": "",
+        "expirePayTime": "2026-10-24 13:42:16",
+        "payId": "<PAY_ID_REDACTED>",
+        "remark": ""
+      }
+    }
+  },
+  "order_id": "<ORDER_ID_REDACTED>",
+  "payment_hints": [
+    "pay",
+    "Pay",
+    "支付",
+    "Url"
+  ],
+  "query_order": {
+    "success": true,
+    "code": 200,
+    "message": "请求成功",
+    "datetime": "2026-10-24 13:27:20",
+    "traceId": "cb0a31030472fb25a16f5593a3581f71",
+    "data": {
+      "orderId": "<ORDER_ID_REDACTED>",
+      "orderStatus": "待支付",
+      "status": "10",
+      "storeName": "麦当劳深圳同方信息港餐厅",
+      "storeAddress": "科技园北区朗山路11号同方信息港E栋G层5号商铺",
+      "orderProductList": [
+        {
+          "productName": "龙焰芝士棒鸡腿堡",
+          "productImage": "https://menu-img.mcd.cn/pcm/prod/menu/ProductPool/product/MS_521953_320.png",
+          "quantity": 1,
+          "price": "27",
+          "comboItemList": []
+        }
+      ],
+      "totalAmount": "27",
+      "realTotalAmount": "27",
+      "totalDiscountAmount": "0",
+      "couponList": [],
+      "createTime": "2026-10-24 13:27:16",
+      "deliveryPrice": "0",
+      "realDeliveryPrice": "0",
+      "needTableware": false,
+      "productPrice": "27",
+      "takeWay": "堂食",
+      "pickupCode": "",
+      "expirePayTime": "2026-10-24 13:42:16",
+      "payId": "<PAY_ID_REDACTED>",
+      "remark": ""
+    }
+  },
+  "cancel_order": {
+    "success": true,
+    "code": 200,
+    "message": "请求成功",
+    "datetime": "2026-10-24 13:27:23",
+    "traceId": "0f42e6e23d0d70e20f700a600102e888",
+    "data": {
+      "cancelResult": true,
+      "orderId": "<ORDER_ID_REDACTED>"
+    }
+  }
+}

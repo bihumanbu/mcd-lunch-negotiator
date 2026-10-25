@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>拼单谈判官 · 一页看完</title>
+<style>
+  :root{
+    --bg:#0A0A0B; --panel:#0E0E10; --line:#1E1E21; --line2:#26262B;
+    --t1:#EDEDEF; --t2:#8A8A93; --t3:#5E5E67;
+    --red:#DA291C; --yellow:#FFC72C;
+    --mono:Consolas,"SF Mono",ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:var(--bg); color:var(--t1);
+    font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.6;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:56px 40px 90px}
+
+  .mono{font-family:var(--mono)}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--t3);
+           text-transform:uppercase;margin-bottom:14px}
+  h1{font-size:40px;line-height:1.24;font-weight:700;letter-spacing:-.015em}
+  h1 em{font-style:normal;color:var(--yellow)}
+  .lede{margin-top:16px;font-size:16px;color:var(--t2);max-width:660px}
+  .lede b{color:#C9C9D1;font-weight:500}
+
+  .rule{height:1px;background:var(--line);margin:44px 0}
+
+  /* 关键指标 */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+        border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:36px}
+  .kpi{background:var(--panel);padding:18px 20px}
+  .kpi .k{font-size:12px;color:var(--t3);font-family:var(--mono);letter-spacing:.06em}
+  .kpi .v{font-size:26px;font-weight:700;margin-top:6px;letter-spacing:-.02em;
+          font-variant-numeric:tabular-nums}
+  .kpi .v.red{color:var(--red)}
+  .kpi .v small{font-size:12px;font-weight:400;color:var(--t3);margin-left:6px;letter-spacing:0}
+
+  h2{font-size:13px;font-family:var(--mono);letter-spacing:.14em;color:var(--t3);
+     text-transform:uppercase;margin-bottom:20px}
+  h3{font-size:17px;font-weight:600;margin-bottom:8px}
+
+  /* 两道墙 */
+  .walls{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .wall{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:22px}
+  .wall .n{font-family:var(--mono);font-size:11px;color:var(--red);letter-spacing:.1em;margin-bottom:10px}
+  .wall p{font-size:14px;color:var(--t2)}
+  .wall p b{color:var(--t1);font-weight:600}
+
+  /* 金额三行 */
+  .money{border-top:1px solid var(--line)}
+  .mrow{display:flex;align-items:baseline;justify-content:space-between;
+        padding:16px 0;border-bottom:1px solid var(--line)}
+  .mrow .k{font-size:15px;color:var(--t2)}
+  .mrow .v{font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .mrow .v small{font-size:12px;font-weight:400;color:var(--t3);margin-left:10px}
+  .mrow.hl .k{color:var(--t1)}
+  .mrow.hl .v{color:var(--t1)}
+
+  /* 表格 */
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;font-size:11px;font-family:var(--mono);letter-spacing:.08em;
+     color:var(--t3);font-weight:400;padding:10px 12px;border-bottom:1px solid var(--line2);
+     text-transform:uppercase}
+  td{padding:11px 12px;border-bottom:1px solid var(--line);color:#D4D4DA}
+  td.num{font-variant-numeric:tabular-nums;color:var(--t1)}
+  td.dim{color:var(--t3)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:10px;color:var(--yellow);
+       border:1px solid #3A3320;background:#171308;padding:1px 6px;border-radius:3px;
+       margin-left:6px;vertical-align:1px}
+  .yellow{color:var(--yellow)}
+
+  /* 拆单 */
+  .orders{border-left:1px solid var(--line2);padding-left:0}
+  .order{display:flex;gap:16px;padding:13px 0 13px 18px;border-bottom:1px solid var(--line);
+         align-items:baseline}
+  .order .idx{font-family:var(--mono);font-size:11px;color:var(--t3);width:34px;flex-shrink:0}
+  .order .body{flex:1;font-size:14px;color:#D4D4DA}
+  .order .body b{color:var(--t1);font-weight:600}
+  .order .amt{font-variant-numeric:tabular-nums;color:var(--t1);font-size:14px}
+
+  /* 差异点 */
+  .diff{border:1px solid #2A2113;background:#100D06;border-radius:8px;padding:24px}
+  .diff .t{font-size:15px;color:var(--t1);font-weight:600;margin-bottom:10px}
+  .diff p{font-size:14px;color:var(--t2)}
+  .diff p+p{margin-top:8px}
+  .diff b{color:var(--yellow);font-weight:600}
+
+  /* 踩坑 */
+  .pits{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .pit{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px}
+  .pit .h{font-size:13.5px;font-weight:600;color:var(--t1);margin-bottom:6px}
+  .pit .d{font-size:13px;color:var(--t2)}
+  .pit code{font-family:var(--mono);font-size:12px;color:#C9A227;background:#161208;
+            padding:1px 5px;border-radius:3px}
+
+  .foot{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);
+        display:flex;justify-content:space-between;align-items:center;
+        font-size:12px;color:var(--t3);font-family:var(--mono);letter-spacing:.04em}
+  .foot a{color:var(--t2);text-decoration:none;border-bottom:1px solid var(--line2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">McDonald's MCP · 1024 超能 Coding 周末 · 用餐赛道</div>
+  <h1>7 个人的午饭，<br><em>一个人算。</em></h1>
+  <p class="lede">基于麦当劳官方 MCP 的团队午餐拆单优化引擎：给它一群人的预算、口味、忌口，
+  返回<b>每人最优买法 + 真实到手价 + 该怎么拆单 + 比乱点省多少</b>。
+  所有价格来自 <b>calculate-price</b> 实时接口，没有一个硬编码金额。</p>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k">单点买</div><div class="v">¥298.40<small>人均 42.63</small></div></div>
+    <div class="kpi"><div class="k">套餐组合</div><div class="v">¥211.60<small>人均 30.23</small></div></div>
+    <div class="kpi"><div class="k">挂券实付</div><div class="v">¥203.30<small>人均 29.04</small></div></div>
+    <div class="kpi"><div class="k">合计省下</div><div class="v red">¥95.10<small>31.9%</small></div></div>
+  </div>
+
+  <div class="rule"></div>
+
+  <h2>问题不是「吃什么」</h2>
+  <div class="walls">
+    <div class="wall">
+      <div class="n">WALL 01</div>
+      <h3>一单只能挂一张券</h3>
+      <p>7 个人合并成一单，等于白扔 6 张券。所以团队点餐本质是<b>拆单</b>，
+      不是推荐。</p>
+    </div>
+    <div class="wall">
+      <div class="n">WALL 02</div>
+      <h3>券绑在个人账户上</h3>
+      <p>账号不能跨人共享。所以正确形态是<b>一个人算、每人自己扫</b>，
+      而不是一个人替全组付款。</p>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <h2>实测结果 · 深圳同方信息港餐厅</h2>
+  <div class="money">
+    <div class="mrow"><span class="k">同样这些吃的，逐个单点</span><span class="v">¥298.40<small>人均 42.63</small></span></div>
+    <div class="mrow"><span class="k">套餐 + 组合买</span><span class="v">¥211.60<small>人均 30.23</small></span></div>
+    <div class="mrow hl"><span class="k">再叠加账户券</span><span class="v">¥203.30<small>人均 29.04</small></span></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:40px;margin-top:44px">
+    <div>
+      <h2>每人买法</h2>
+      <table>
+        <thead><tr><th>人</th><th>预算</th><th>推荐</th><th style="text-align:right">实付</th></tr></thead>
+        <tbody>
+          <tr><td>老王</td><td class="dim">¥40</td><td>不素之霸双层牛堡三件套</td><td class="num" style="text-align:right">37.50</td></tr>
+          <tr><td>小林</td><td class="dim">¥30</td><td>龙焰芝士棒鸡腿堡三件套</td><td class="num" style="text-align:right">29.90</td></tr>
+          <tr><td>阿珍</td><td class="dim">¥35</td><td>龙焰芝士棒鸡腿堡三件套</td><td class="num" style="text-align:right">29.90</td></tr>
+          <tr><td>大刘</td><td class="dim">¥50</td><td>培根安格斯厚牛堡三件套</td><td class="num" style="text-align:right">45.50</td></tr>
+          <tr><td>小张</td><td class="dim">¥25</td><td>"我就喜欢"鸡薯双全盒</td><td class="num" style="text-align:right">15.90</td></tr>
+          <tr><td>Lily</td><td class="dim">¥40</td><td>冰燕麦奶铁中杯<span class="tag">券 7 折</span></td><td class="num yellow" style="text-align:right">14.70</td></tr>
+          <tr><td>老陈</td><td class="dim">¥32</td><td>龙焰芝士棒鸡腿堡三件套</td><td class="num" style="text-align:right">29.90</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:12.5px;color:var(--t3);margin-top:14px">
+        7 / 7 在预算内 · 0 人忌口踩雷 · 小林按 500 大卡分类筛减脂
+      </p>
+    </div>
+
+    <div>
+      <h2>怎么下这 5 单</h2>
+      <div class="orders">
+        <div class="order"><span class="idx">01</span><span class="body">冰燕麦奶铁中杯 × 1 —— <b>Lily</b><br><span style="color:var(--t3);font-size:12.5px">有券，独占一单</span></span><span class="amt">14.70</span></div>
+        <div class="order"><span class="idx">02</span><span class="body">不素之霸双层牛堡三件套 × 1 —— <b>老王</b></span><span class="amt">37.50</span></div>
+        <div class="order"><span class="idx">03</span><span class="body">龙焰芝士棒鸡腿堡三件套 × 3 —— <b>小林、阿珍、老陈</b><br><span style="color:var(--t3);font-size:12.5px">无券，同款合并</span></span><span class="amt">89.70</span></div>
+        <div class="order"><span class="idx">04</span><span class="body">培根安格斯厚牛堡三件套 × 1 —— <b>大刘</b></span><span class="amt">45.50</span></div>
+        <div class="order"><span class="idx">05</span><span class="body">鸡薯双全盒 × 1 —— <b>小张</b></span><span class="amt">15.90</span></div>
+      </div>
+      <p style="font-size:12.5px;color:var(--t3);margin-top:14px">
+        每单支付链接 <b style="color:var(--t2)">15 分钟</b>有效 → 所以一个人连扫 5 单来不及，
+        链接要分给各自扫。
+      </p>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <h2>为什么不是「又一个点单工具」</h2>
+  <div class="diff">
+    <div class="t">单点推荐是用乘法，拼单是用组合。</div>
+    <p>一单只能挂一张券、且券归属不同的人时，<b>「怎么分单」的解空间比「每顿吃什么」大得多</b>——
+    7 个人、5 种可用券、一单一张，拆法有几十种，每种省钱效果都不一样，而且必须用官方计价接口验证。</p>
+    <p>GitHub 上已有 100+ 个麦当劳 MCP 项目，<b>几乎全部是单人视角</b>（帮我一个人省钱、算卡路里）。
+    团队拼单这个角度，还没人做。</p>
+  </div>
+
+  <div class="rule"></div>
+
+  <h2>踩到的坑（比功能更能说明做了什么）</h2>
+  <div class="pits">
+    <div class="pit"><div class="h">套餐专属 SKU 单点返回 0，不是报错</div>
+      <div class="d">「可乐中杯」不单卖，<code>calculate-price</code> 返回 <code>0</code>。
+      直接把 0 当免费求和，会把「套餐省多少」算成荒谬值（¥35 的套餐单点只要 ¥13.50）。
+      现改为同档位可单点商品做保守下限估值，并在输出里逐条标注。</div></div>
+    <div class="pit"><div class="h">批量计价遇到无效 SKU，整单归零</div>
+      <div class="d">14 个商品里混进一个非卖品，<code>price</code> 直接返回 <code>0</code>，
+      不报错。必须逐个校验再合并。</div></div>
+    <div class="pit"><div class="h">参数约束没写在 schema 里</div>
+      <div class="d"><code>query-nearby-stores</code> 在 <code>searchType=2</code> 时，
+      <code>city</code> 和 <code>keyword</code> 必须同时传，只传一个报 <code>600058</code>。</div></div>
+    <div class="pit"><div class="h">单位方向相反</div>
+      <div class="d">计价返回「分」（<code>2790</code> = ¥27.90），菜单和订单返回「元」字符串。
+      混用一次，全部金额差 100 倍。</div></div>
+    <div class="pit"><div class="h">响应不是纯 JSON</div>
+      <div class="d">同一套接口返回三种形态：「字段说明书 + 原始 JSON」混合文本、Markdown 表格、
+      TOON 文本。不写解析层，一行数据都取不出来。</div></div>
+    <div class="pit"><div class="h">支付窗口 15 分钟，推翻了原设计</div>
+      <div class="d">下单实测：<code>payH5Url</code> 真实存在，但 <code>expirePayTime</code>
+      只有 15 分钟。5 张订单一个人连扫来不及——所以「一个人替全组付款」不成立，
+      改成「一个人算，每人自己扫」。</div></div>
+  </div>
+
+  <div class="rule"></div>
+
+  <h2>边界与安全</h2>
+  <div class="walls">
+    <div class="wall">
+      <div class="n">不做</div>
+      <p><b>不做自动支付。</b>只算方案 + 生成支付链接，付款由人扫码。
+      写操作失控是这类工具最大的风险点。</p>
+    </div>
+    <div class="wall">
+      <div class="n">不做</div>
+      <p><b>不管理多账户 Token。</b>券绑个人账户，跨账户在规则和技术上都不成立，
+      产品定位是「一个人的账号替全组算账」。</p>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>5 个 MCP 工具 · 114 次真实调用 · 零第三方依赖 · Python 标准库</span>
+    <a href="https://github.com/bihumanbu/mcd-lunch-negotiator">github.com/bihumanbu/mcd-lunch-negotiator</a>
+  </div>
+
+</div>
+</body>
+</html>

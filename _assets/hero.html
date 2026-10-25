@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { background:#0A0A0B; }
+  body {
+    font-family: "Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .card {
+    width:1200px; background:#0A0A0B;
+    display:flex; flex-direction:column;
+    color:#EDEDEF;
+  }
+  .mono { font-family:Consolas,"SF Mono",monospace; }
+
+  .topbar {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 40px; border-bottom:1px solid #1E1E21; flex-shrink:0;
+  }
+  .brand { display:flex; align-items:center; gap:12px; font-size:15px; font-weight:600; }
+  .dot { width:7px; height:7px; background:#DA291C; border-radius:50%; }
+  .topbar .mono { font-size:12px; color:#6B6B74; letter-spacing:.06em; }
+
+  .body { display:flex; padding:34px 40px 34px; gap:36px; align-items:stretch; }
+
+  .left { width:588px; flex-shrink:0; }
+  .eyebrow { font-size:11px; color:#5E5E67; letter-spacing:.16em; margin-bottom:14px; }
+  h1 { font-size:41px; line-height:1.26; font-weight:700; letter-spacing:-.015em; }
+  h1 em { font-style:normal; color:#FFC72C; }
+  .sub { margin-top:15px; font-size:15px; line-height:1.7; color:#8A8A93; }
+  .sub b { color:#C9C9D1; font-weight:500; }
+
+  .money { margin-top:24px; border-top:1px solid #1E1E21; }
+  .mrow { display:flex; align-items:baseline; justify-content:space-between;
+          padding:12px 0; border-bottom:1px solid #1E1E21; }
+  .mrow .k { font-size:15px; color:#8A8A93; }
+  .mrow .v { font-size:21px; font-weight:600; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
+  .mrow .v small { font-size:12px; font-weight:400; color:#5E5E67; margin-left:10px; }
+  .mrow.hl .k { color:#EDEDEF; }
+  .mrow.hl .v { color:#EDEDEF; }
+
+  .save { margin-top:20px; display:flex; align-items:baseline; gap:14px; }
+  .save .num { font-size:44px; font-weight:700; color:#DA291C; letter-spacing:-.03em;
+               line-height:1; font-variant-numeric:tabular-nums; }
+  .save .txt { font-size:13.5px; color:#8A8A93; line-height:1.55; padding-bottom:2px; }
+  .save .txt b { color:#EDEDEF; font-weight:600; }
+
+  .right { flex:1; border:1px solid #1E1E21; border-radius:10px;
+           display:flex; flex-direction:column; overflow:hidden; }
+  .rhead { padding:14px 18px; border-bottom:1px solid #1E1E21; display:flex;
+           justify-content:space-between; align-items:center; flex-shrink:0; }
+  .rhead .t { font-size:12px; color:#8A8A93; letter-spacing:.04em; }
+  .rhead .badge { font-size:10px; color:#FFC72C; border:1px solid #3A3320;
+                  background:#171308; padding:2px 7px; border-radius:4px; letter-spacing:.06em; }
+  .rows { flex:1; display:flex; flex-direction:column; justify-content:space-between; padding:12px 0; }
+  .r { display:flex; align-items:center; padding:0 18px; gap:10px; }
+  .r .nm { width:42px; font-size:13px; color:#9A9AA3; flex-shrink:0; }
+  .r .it { flex:1; font-size:13px; color:#D4D4DA; white-space:nowrap;
+           overflow:hidden; text-overflow:ellipsis; }
+  .r .pr { font-size:13px; color:#EDEDEF; font-variant-numeric:tabular-nums; }
+  .r .pr.coupon { color:#FFC72C; }
+  .r .tag { font-size:9px; color:#FFC72C; border:1px solid #3A3320; background:#171308;
+            padding:1px 5px; border-radius:3px; }
+  .rfoot { padding:12px 18px; border-top:1px solid #1E1E21; font-size:11px;
+           color:#5E5E67; letter-spacing:.03em; flex-shrink:0; }
+
+  .strip { display:flex; align-items:center; gap:24px; padding:17px 40px;
+           border-top:1px solid #1E1E21; flex-shrink:0; }
+  .strip .s { font-size:11.5px; color:#6B6B74; letter-spacing:.04em; }
+  .strip .s b { color:#B4B4BC; font-weight:600; }
+  .strip .sep { width:1px; height:12px; background:#25252A; }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>拼单谈判官
+      <span style="color:#3A3A40;">/</span>
+      <span class="mono" style="color:#6B6B74;">MCD LUNCH NEGOTIATOR</span></div>
+    <div class="mono">MCDONALD'S MCP · 真实计价 · 零依赖</div>
+  </div>
+
+  <div class="body">
+    <div class="left">
+      <div class="eyebrow mono">PROBLEM</div>
+      <h1>7 个人的午饭，<br><em>一个人算。</em></h1>
+      <p class="sub">麦当劳<b>一单只能挂一张券</b>，而券绑在个人账户上。<br>
+      所以团队点餐本质是<b>拆单优化</b>，不是聊天能解决的。</p>
+
+      <div class="money">
+        <div class="mrow"><span class="k">同样这些吃的，逐个单点</span><span class="v">¥298.40<small>人均 42.63</small></span></div>
+        <div class="mrow"><span class="k">套餐 + 组合买</span><span class="v">¥211.60<small>人均 30.23</small></span></div>
+        <div class="mrow hl"><span class="k">再叠加账户券</span><span class="v">¥203.30<small>人均 29.04</small></span></div>
+      </div>
+
+      <div class="save">
+        <div class="num">¥95.10</div>
+        <div class="txt">合计省下 <b>31.9%</b><br>7 人 <b>全部在预算内</b>，0 人忌口踩雷</div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="rhead">
+        <span class="t">实测方案 · 深圳同方信息港餐厅</span>
+        <span class="badge mono">REAL DATA</span>
+      </div>
+      <div class="rows">
+        <div class="r"><span class="nm">老王</span><span class="it">不素之霸双层牛堡三件套</span><span class="pr">37.50</span></div>
+        <div class="r"><span class="nm">小林</span><span class="it">龙焰芝士棒鸡腿堡三件套</span><span class="pr">29.90</span></div>
+        <div class="r"><span class="nm">阿珍</span><span class="it">龙焰芝士棒鸡腿堡三件套</span><span class="pr">29.90</span></div>
+        <div class="r"><span class="nm">大刘</span><span class="it">培根安格斯厚牛堡三件套</span><span class="pr">45.50</span></div>
+        <div class="r"><span class="nm">小张</span><span class="it">"我就喜欢"鸡薯双全盒</span><span class="pr">15.90</span></div>
+        <div class="r"><span class="nm">Lily</span><span class="it">冰燕麦奶铁中杯</span><span class="tag mono">券</span><span class="pr coupon">14.70</span></div>
+        <div class="r"><span class="nm">老陈</span><span class="it">龙焰芝士棒鸡腿堡三件套</span><span class="pr">29.90</span></div>
+      </div>
+      <div class="rfoot mono">7 / 7 在预算内 · 0 忌口踩雷 · 拆成 5 单</div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="s"><b>5</b> 个 MCP 工具</span><span class="sep"></span>
+    <span class="s"><b>114</b> 次真实调用</span><span class="sep"></span>
+    <span class="s">价格全部来自 <b>calculate-price</b></span><span class="sep"></span>
+    <span class="s">支付链接 <b>15 分钟</b>有效 → 一个人算，每人自己扫</span>
+  </div>
+
+</div>
+</body>
+</html>

@@ -20,3 +20,7 @@ data/
 .vscode/
 .idea/
 .DS_Store
+
+# 推送工具脚本（含凭据读取逻辑，不入库）
+_push_api.py
+_assets/hero.png
